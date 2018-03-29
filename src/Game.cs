@@ -49,7 +49,8 @@ namespace mathbattle
                     await from.Player.SendMessage("Noo!");
                 }
 
-                if (!AllAnswered()) {
+                if (!AllAnswered())
+                {
                     await from.Player.SendMessage("Waiting for other players");
                 }
             }
@@ -68,8 +69,6 @@ namespace mathbattle
                 await Task.Delay(500);
 
                 await SendScore();
-
-
 
                 if (QuestionNum < 10)
                 {
@@ -120,9 +119,9 @@ namespace mathbattle
             {
                 await SendForAll("Last question:");
             }
-            else {
+            else
+            {
                 await SendForAll("Question " + QuestionNum + ":");
-                
             }
 
             Question = QuestionSelector.SelectQuestion();

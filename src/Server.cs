@@ -20,7 +20,7 @@ namespace mathbattle
             Initialize(id);
         }
 
-        async Task Initialize(string id)
+        async void Initialize(string id)
         {
             Client = new TelegramBotClient(id);
             var me = await Client.GetMeAsync();
