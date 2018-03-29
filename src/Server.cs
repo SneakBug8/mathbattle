@@ -38,10 +38,11 @@ namespace mathbattle
             Player curplayer;
 
             if (!Players.ContainsKey(args.Message.From.Id)) {
-                curplayer = new Player();
-                curplayer.Id = args.Message.From.Id;
-                curplayer.Name = args.Message.From.FirstName + args.Message.From.LastName;
-                curplayer.ChatId = args.Message.Chat.Id;
+                curplayer = new Player(
+                    args.Message.From.Id,
+                    args.Message.From.FirstName + args.Message.From.LastName,
+                    args.Message.Chat.Id
+                );
                 Players.Add(curplayer.Id, curplayer);
 
                 curplayer.SendMessage("You have been registered in game. Have good time!");

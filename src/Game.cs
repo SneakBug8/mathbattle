@@ -66,7 +66,6 @@ namespace mathbattle
                     await Program.Server.Client.SendChatActionAsync(gameplayer.Player.ChatId, ChatAction.Typing);
                     gameplayer.Answered = false;
                 }
-                await Task.Delay(500);
 
                 await SendScore();
 
@@ -111,6 +110,8 @@ namespace mathbattle
 
         async Task ChangeQuestion()
         {
+            await Task.Delay(500);
+            
             if (QuestionNum == 0)
             {
                 await SendForAll("First question:");
@@ -126,11 +127,13 @@ namespace mathbattle
 
             Question = QuestionSelector.SelectQuestion();
             QuestionNum++;
-            await SendForAll(Question.QuestionText, 750);
+            await SendForAll(Question.QuestionText);
         }
 
         async Task SendScore()
         {
+            await Task.Delay(500);
+
             var scoretext = "";
 
             foreach (var gamePlayer in GamePlayers)
