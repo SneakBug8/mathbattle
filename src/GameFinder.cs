@@ -1,25 +1,26 @@
 using System.Collections.Generic;
 using mathbattle.utility;
+using mathbattle.config;
 
 namespace mathbattle
 {
     public class GameFinder
     {
-        public int TimeTillRemoveFromSearching = 120;
         public List<SearchingPlayer> SearchingPlayers = new List<SearchingPlayer>();
 
         public void AddPlayer(Player player)
         {
-            SearchingPlayers.Add(new SearchingPlayer(player, TimeTillRemoveFromSearching));
+            SearchingPlayers.Add(new SearchingPlayer(player, SearcherConfig.TimeTillDeleteFromSearch));
 
             player.SendMessage("You have been added to search queue. Waiting for the game.");
         }
         public void CheckPlayers()
         {
-            if (SearchingPlayers.Count > 2)
+            if (SearchingPlayers.Count >= SearcherConfig.MinimumPlayersForGameCreation)
             {
                 DelayedTask.DelayTask(new List<DelayedTask>() {
                 new DelayedTask(() => StartGame(), 60),
+                new DelayedTask(() => SendToAll.SendText(SearchingPlayers.ToArray(), "Game will start in 60 seconds."), 1),                
                 new DelayedTask(() => SendToAll.SendText(SearchingPlayers.ToArray(), "Game will start in 30 seconds."), 30),
                 new DelayedTask(() => SendToAll.SendText(SearchingPlayers.ToArray(), "Game will start in 15 seconds."), 45),
                 new DelayedTask(() => SendToAll.SendText(SearchingPlayers.ToArray(), "Game will start in 5 seconds."), 55)

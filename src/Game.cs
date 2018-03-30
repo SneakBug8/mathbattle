@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using mathbattle.utility;
+using mathbattle.config;
 using System.Collections.Generic;
 
 namespace mathbattle
@@ -72,7 +73,7 @@ namespace mathbattle
 
                 await SendScore();
 
-                if (QuestionNum < 10 || !HaveWinner())
+                if (QuestionNum < GameConfig.QuestionsPerGame || !HaveWinner())
                 {
                     await ChangeQuestion();
                 }
