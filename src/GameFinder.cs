@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using mathbattle.utility;
 
 namespace mathbattle
 {
@@ -7,52 +8,84 @@ namespace mathbattle
         public int TimeTillRemoveFromSearching = 120;
         public List<SearchingPlayer> SearchingPlayers = new List<SearchingPlayer>();
 
-        public void AddPlayer(Player player) {
+        public void AddPlayer(Player player)
+        {
             SearchingPlayers.Add(new SearchingPlayer(player, TimeTillRemoveFromSearching));
 
             player.SendMessage("You have been added to search queue. Waiting for the game.");
         }
-        public void CheckPlayers() {
-            if (SearchingPlayers.Count >= 2) {
-                var game = new Game(GetPlayersList(SearchingPlayers));
-                SearchingPlayers = new List<SearchingPlayer>();
-                foreach (var gameplayer in game.GamePlayers) {
-                    gameplayer.Player.Game = game;
-                }
-                Program.Server.Games.Add(game);
+        public void CheckPlayers()
+        {
+            if (SearchingPlayers.Count > 2)
+            {
+                DelayedTask.DelayTask(new List<DelayedTask>() {
+                new DelayedTask(() => StartGame(), 60),
+                new DelayedTask(() => SendToAll.SendText(SearchingPlayers.ToArray(), "Game will start in 30 seconds."), 30),
+                new DelayedTask(() => SendToAll.SendText(SearchingPlayers.ToArray(), "Game will start in 15 seconds."), 45),
+                new DelayedTask(() => SendToAll.SendText(SearchingPlayers.ToArray(), "Game will start in 5 seconds."), 55)
+                });
             }
 
             CheckOldPlayers();
         }
 
-        void CheckOldPlayers() {
-            for (int i = 0; i < SearchingPlayers.Count; i++) {
+        void CheckOldPlayers()
+        {
+            for (int i = 0; i < SearchingPlayers.Count; i++)
+            {
                 SearchingPlayers[i].TimeTillRemoveFromSearching--;
 
-                if (SearchingPlayers[i].TimeTillRemoveFromSearching <= 0) {
+                if (SearchingPlayers[i].TimeTillRemoveFromSearching <= 0)
+                {
                     SearchingPlayers[i].Player.SendMessage("You have been deleted from search due to inactivity");
                     SearchingPlayers[i] = null;
                 }
             }
 
-            while (SearchingPlayers.Contains(null)) {
+            while (SearchingPlayers.Contains(null))
+            {
                 SearchingPlayers.Remove(null);
             }
         }
 
-        public Player[] GetPlayersList(List<SearchingPlayer> searchingPlayers) {
+        void StartGame()
+        {
+            if (SearchingPlayers.Count < 2)
+            {
+                return;
+            }
+
+            // Create new game and assign there all players
+            var game = new Game(GetPlayersList(SearchingPlayers));
+
+            // Empty Searching Players
+            SearchingPlayers = new List<SearchingPlayer>();
+
+            foreach (var gameplayer in game.GamePlayers)
+            {
+                gameplayer.Player.Game = game;
+            }
+            Program.Server.Games.Add(game);
+        }
+
+        public Player[] GetPlayersList(List<SearchingPlayer> searchingPlayers)
+        {
             var players = new Player[searchingPlayers.Count];
 
-            for (int i = 0; i < searchingPlayers.Count; i++) {
+            for (int i = 0; i < searchingPlayers.Count; i++)
+            {
                 players[i] = searchingPlayers[i].Player;
             }
 
             return players;
         }
 
-        public bool Contains(Player player) {
-            foreach (var searchingplayer in SearchingPlayers) {
-                if (searchingplayer.Player == player) {
+        public bool Contains(Player player)
+        {
+            foreach (var searchingplayer in SearchingPlayers)
+            {
+                if (searchingplayer.Player == player)
+                {
                     return true;
                 }
             }
@@ -61,11 +94,12 @@ namespace mathbattle
         }
     }
 
-    public class SearchingPlayer {
-        public Player Player;
+    public class SearchingPlayer : PlayerWrapper
+    {
         public int TimeTillRemoveFromSearching;
 
-        public SearchingPlayer(Player player, int timeTillRemoveFromSearching) {
+        public SearchingPlayer(Player player, int timeTillRemoveFromSearching)
+        {
             Player = player;
             TimeTillRemoveFromSearching = timeTillRemoveFromSearching;
         }

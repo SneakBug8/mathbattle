@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using mathbattle.utility;
+using System.Collections.Generic;
 
 namespace mathbattle
 {
@@ -26,7 +28,8 @@ namespace mathbattle
         }
         async void Start()
         {
-            await SendForAll("Game is starting \n Your opponents:");
+            SendToAll.SendText(GamePlayers, "Game is starting \n Your opponents:");
+
             await SendScore();
             await ChangeQuestion();
         }
@@ -76,7 +79,8 @@ namespace mathbattle
                 else
                 {
                     // End the game
-                    await SendForAll("Game has ended. Final Score:");
+                    SendToAll.SendText(GamePlayers, "Game has ended. Final Score:");
+
                     await SendScore();
 
                     foreach (var player in GamePlayers)
@@ -120,50 +124,29 @@ namespace mathbattle
 
             if (QuestionNum == 0)
             {
-                await SendForAll("First question:");
+                SendToAll.SendText(GamePlayers, "First question:");
+
             }
             else if (QuestionNum == 10)
             {
-                await SendForAll("Last question:");
+                SendToAll.SendText(GamePlayers, "Last question:");
             }
             else
             {
-                await SendForAll("Question " + QuestionNum + ":");
+                SendToAll.SendText(GamePlayers, "Question " + QuestionNum + ":");
             }
 
             Question = QuestionSelector.SelectQuestion();
             QuestionNum++;
-            await SendForAll(Question.QuestionText);
+            SendToAll.SendText(GamePlayers, Question.QuestionText);
 
-            TimerTask(60f, () => ChangeQuestion());
-        }
 
-        async void TimerTask(float time, Action action)
-        {
-            /*
-            1 sec = 100 timer = 1000 ms
-             */
-            for (int timer = (int)(time * 100); timer > 0; timer--)
-            {
-                await Task.Delay(10);
-
-                if (timer == 30 * 100)
-                {
-                    SendForAll("30 seconds left", 0);
-                }
-
-                if (timer == 15 * 100)
-                {
-                    SendForAll("15 seconds left", 0);
-                }
-
-                if (timer == 5 * 100)
-                {
-                    SendForAll("5 seconds left", 0);
-                }
-            }
-
-            action();
+            DelayedTask.DelayTask(new List<DelayedTask>() {
+                new DelayedTask(() => ChangeQuestion(), 60),
+                new DelayedTask(() => SendToAll.SendText(GamePlayers,"30 seconds remaining"), 30),
+                new DelayedTask(() => SendToAll.SendText(GamePlayers,"15 seconds remaining"), 45),
+                new DelayedTask(() => SendToAll.SendText(GamePlayers,"5 seconds remaining"), 55)
+            });
         }
 
         async Task SendScore()
@@ -177,22 +160,7 @@ namespace mathbattle
                 scoretext += gamePlayer.Player.Name + " - " + gamePlayer.Score + ". \n";
             }
 
-            await SendForAll(scoretext, 1000);
-        }
-
-        async Task SendForAll(string text, int timeout = 500)
-        {
-            foreach (var gamePlayer in GamePlayers)
-            {
-                await Program.Server.Client.SendChatActionAsync(gamePlayer.Player.ChatId, ChatAction.Typing);
-            }
-
-            await Task.Delay(500);
-
-            foreach (var gamePlayer in GamePlayers)
-            {
-                await gamePlayer.Player.SendMessage(text, 0);
-            }
+            SendToAll.SendText(GamePlayers, scoretext);
         }
 
         bool AllAnswered()
@@ -225,9 +193,8 @@ namespace mathbattle
         }
     }
 
-    public class GamePlayer
+    public class GamePlayer : PlayerWrapper
     {
-        public Player Player;
         public bool Answered;
         public int Score;
     }

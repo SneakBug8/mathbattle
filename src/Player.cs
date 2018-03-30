@@ -17,9 +17,13 @@ namespace mathbattle
             ChatId = chatId;
         }
         public async Task SendMessage(string text, int delay = 250) {
-            await Program.Server.Client.SendChatActionAsync(ChatId, ChatAction.Typing);
+            SendAction(ChatAction.Typing);
             await Task.Delay(delay);
             await Program.Server.Client.SendTextMessageAsync(ChatId, text);
+        }
+
+        public void SendAction(ChatAction action) {
+            Program.Server.Client.SendChatActionAsync(ChatId, action);
         }
     }
 }
