@@ -59,7 +59,7 @@ namespace mathbattle
                 curplayer.Game.OnMessage(args.Message);
                 return;
             }
-            else if (!Program.GameFinder.SearchingPlayers.Contains(curplayer)) {
+            else if (!Program.GameFinder.Contains(curplayer)) {
                 Program.GameFinder.AddPlayer(curplayer);
             }
             else {
