@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,33 +37,49 @@ namespace mathbattle
         void OnMessage(object sender, MessageEventArgs args)
         {
             Player curplayer;
+            Console.WriteLine(args.Message.From.FirstName + ": " + args.Message.Text);            
 
-            if (!Players.ContainsKey(args.Message.From.Id)) {
-                curplayer = new Player(
-                    args.Message.From.Id,
-                    args.Message.From.FirstName + args.Message.From.LastName,
-                    args.Message.Chat.Id
-                );
+            if (!Players.ContainsKey(args.Message.From.Id))
+            {
+                var col = Program.Database.GetCollection<Player>("Players");
+                curplayer = col.FindOne(x => x.Id == args.Message.From.Id);
+
+                if (curplayer == null)
+                {
+                    curplayer = new Player(
+                        args.Message.From.Id,
+                        args.Message.From.FirstName + args.Message.From.LastName
+                    );
+
+                    col.Insert(curplayer);
+                    curplayer.SendMessage("You have been registered in game. Have good time!");
+                }
+
+                curplayer.ChatId = args.Message.Chat.Id;
                 Players.Add(curplayer.Id, curplayer);
 
-                curplayer.SendMessage("You have been registered in game. Have good time!");
             }
-            else {
+            else
+            {
                 curplayer = Players[args.Message.From.Id];
             }
 
-            if (args.Message.Text == null) {
+            if (args.Message.Text == null)
+            {
                 return;
             }
 
-            if (curplayer.Game != null) {
+            if (curplayer.Game != null)
+            {
                 curplayer.Game.OnMessage(args.Message);
                 return;
             }
-            else if (!Program.GameFinder.Contains(curplayer)) {
+            else if (!Program.GameFinder.Contains(curplayer))
+            {
                 Program.GameFinder.AddPlayer(curplayer);
             }
-            else {
+            else
+            {
                 curplayer.SendMessage("We're searching a game for you... There are currently " + Players.Count + " online.");
             }
         }
