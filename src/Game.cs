@@ -130,22 +130,25 @@ namespace mathbattle
             QuestionNum++;
             await SendForAll(Question.QuestionText);
 
-            TimerTask(1f, () => ChangeQuestion());
+            TimerTask(60f, () => ChangeQuestion());
         }
 
         async void TimerTask(float time, Action action) {
+            /*
+            1 sec = 100 timer = 1000 ms
+             */
             for (int timer = (int)(time * 100); timer > 0; timer--) {
                 await Task.Delay(10);
 
-                if (timer == 30 * 10) {
+                if (timer == 30 * 100) {
                     await SendForAll("30 seconds left", 0);
                 }
 
-                if (timer == 15 * 10) {
+                if (timer == 15 * 100) {
                     await SendForAll("15 seconds left", 0);
                 }
 
-                if (timer == 5 * 10) {
+                if (timer == 5 * 100) {
                     await SendForAll("5 seconds left", 0);
                 }
             }
