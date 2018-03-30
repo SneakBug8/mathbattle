@@ -65,7 +65,6 @@ namespace mathbattle
                 foreach (var gameplayer in GamePlayers)
                 {
                     await Program.Server.Client.SendChatActionAsync(gameplayer.Player.ChatId, ChatAction.Typing);
-                    gameplayer.Answered = false;
                 }
 
                 await SendScore();
@@ -111,8 +110,14 @@ namespace mathbattle
 
         async Task ChangeQuestion()
         {
+            foreach (var gameplayer in GamePlayers)
+            {
+                await Program.Server.Client.SendChatActionAsync(gameplayer.Player.ChatId, ChatAction.Typing);
+                gameplayer.Answered = false;
+            }
+
             await Task.Delay(500);
-            
+
             if (QuestionNum == 0)
             {
                 await SendForAll("First question:");
@@ -133,23 +138,28 @@ namespace mathbattle
             TimerTask(60f, () => ChangeQuestion());
         }
 
-        async void TimerTask(float time, Action action) {
+        async void TimerTask(float time, Action action)
+        {
             /*
             1 sec = 100 timer = 1000 ms
              */
-            for (int timer = (int)(time * 100); timer > 0; timer--) {
+            for (int timer = (int)(time * 100); timer > 0; timer--)
+            {
                 await Task.Delay(10);
 
-                if (timer == 30 * 100) {
-                    await SendForAll("30 seconds left", 0);
+                if (timer == 30 * 100)
+                {
+                    SendForAll("30 seconds left", 0);
                 }
 
-                if (timer == 15 * 100) {
-                    await SendForAll("15 seconds left", 0);
+                if (timer == 15 * 100)
+                {
+                    SendForAll("15 seconds left", 0);
                 }
 
-                if (timer == 5 * 100) {
-                    await SendForAll("5 seconds left", 0);
+                if (timer == 5 * 100)
+                {
+                    SendForAll("5 seconds left", 0);
                 }
             }
 
