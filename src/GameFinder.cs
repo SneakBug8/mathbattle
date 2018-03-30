@@ -26,12 +26,12 @@ namespace mathbattle
         }
 
         void CheckOldPlayers() {
-            foreach (var searchingplayer in SearchingPlayers) {
-                searchingplayer.TimeTillRemoveFromSearching--;
+            for (int i = 0; i < SearchingPlayers.Count; i++) {
+                SearchingPlayers[i].TimeTillRemoveFromSearching--;
 
-                if (searchingplayer.TimeTillRemoveFromSearching <= 0) {
-                    searchingplayer.Player.SendMessage("You have been deleted from search due to inactivity");
-                    SearchingPlayers[SearchingPlayers.IndexOf(searchingplayer)] = null;
+                if (SearchingPlayers[i].TimeTillRemoveFromSearching <= 0) {
+                    SearchingPlayers[i].Player.SendMessage("You have been deleted from search due to inactivity");
+                    SearchingPlayers[i] = null;
                 }
             }
 

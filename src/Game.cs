@@ -69,11 +69,11 @@ namespace mathbattle
 
                 await SendScore();
 
-                if (QuestionNum < 10)
+                if (QuestionNum < 10 || !HaveWinner())
                 {
                     await ChangeQuestion();
                 }
-                else if (HaveWinner())
+                else
                 {
                     // End the game
                     await SendForAll("Game has ended. Final Score:");
