@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -128,6 +129,28 @@ namespace mathbattle
             Question = QuestionSelector.SelectQuestion();
             QuestionNum++;
             await SendForAll(Question.QuestionText);
+
+            TimerTask(1f, () => ChangeQuestion());
+        }
+
+        async void TimerTask(float time, Action action) {
+            for (int timer = (int)(time * 100); timer > 0; timer++) {
+                await Task.Delay(10);
+
+                if (timer == 30 * 100) {
+                    await SendForAll("30 seconds left", 0);
+                }
+
+                if (timer == 15 * 100) {
+                    await SendForAll("15 seconds left", 0);
+                }
+
+                if (timer == 5 * 100) {
+                    await SendForAll("5 seconds left", 0);
+                }
+            }
+
+            action();
         }
 
         async Task SendScore()
