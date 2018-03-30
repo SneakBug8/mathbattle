@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Telegram.Bot;
 using mathbattle.config;
+using mathbattle.database;
 
 namespace mathbattle
 {
@@ -10,8 +11,11 @@ namespace mathbattle
         
         public static GameFinder GameFinder;
         public static Server Server;
+
+        public static DataContext DataContext;
         static void Main(string[] args)
         {
+            DataContext = new DataContext();
             Server = new Server(GlobalConfig.Token);
             GameFinder = new GameFinder();
 
