@@ -15,11 +15,23 @@ namespace mathbattle.utility
             Action = action;
             Delay = delay;
         }
-        public async static void DelayTask(List<DelayedTask> actions)
+        public static TaskDelayer DelayTask(List<DelayedTask> actions)
         {
-            var Actions = actions;
+            return new TaskDelayer(actions);
+        }
+    }
 
-            while (Actions.Count > 0)
+    public class TaskDelayer {
+        List<DelayedTask> Actions;
+        bool Stopped;
+        public TaskDelayer(List<DelayedTask> actions) {
+            Actions = actions;
+
+            Loop();
+        }
+
+        async void Loop() {
+            while (Actions.Count > 0 && !Stopped)
             {
                 for (int i = 0; i < Actions.Count; i++)
                 {
@@ -41,15 +53,8 @@ namespace mathbattle.utility
             }
         }
 
-        public async static void DelayTask(DelayedTask action)
-        {
-            while (action.Delay > 0)
-            {
-                action.Delay--;
-                await Task.Delay(1000);
-            }
-
-            action.Action();
+        public void Stop() {
+            Stopped = true;
         }
     }
 }

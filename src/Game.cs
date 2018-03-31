@@ -14,6 +14,8 @@ namespace mathbattle
         public Question Question;
         public GamePlayer[] GamePlayers;
         public int QuestionNum;
+        TaskDelayer TillNewQuestionDelayer;
+        public bool AcceptMessages = true;
         public Game(Player[] players)
         {
             var gameplayers = new GamePlayer[players.Length];
@@ -38,6 +40,11 @@ namespace mathbattle
         public async void OnMessage(Message message)
         {
             GamePlayer from = PlayerById(message.From.Id);
+
+            if (!AcceptMessages)
+            {
+                return;
+            }
 
             if (!from.Answered)
             {
@@ -72,34 +79,34 @@ namespace mathbattle
                     await Program.Server.Client.SendChatActionAsync(gameplayer.Player.ChatId, ChatAction.Typing);
                 }
 
-                await SendScore();
 
-                if (QuestionNum < GameConfig.QuestionsPerGame || !HaveWinner())
+                if (QuestionNum > GameConfig.QuestionsPerGame && HaveWinner())
                 {
-                    await ChangeQuestion();
+                    EndGame();
                 }
                 else
                 {
-                    EndGame();
+                    await SendScore();
+                    await ChangeQuestion();
                 }
             }
         }
 
         async void EndGame()
         {
-            SendToAll.SendText(GamePlayers, "Game has ended. Final Score:");
+            StopQuestionTimer();
 
-            await SendScore();
+            SendToAll.SendText(GamePlayers, "Game has ended. Final Score:");
 
             var playersByScore = (from i in GamePlayers
                                   where i.Score > 0
-                                  orderby i.Score
+                                  orderby i.Score descending
                                   select i).ToArray();
 
 
-            for (int i = playersByScore.Length - 1; i < playersByScore.Length; i--)
+            for (int i = 0; i < playersByScore.Length; i++)
             {
-                playersByScore[i].Player.ChangeRating(i);
+                playersByScore[i].Player.ChangeRating(playersByScore.Length - i);
             }
 
             var playersApplyNegScore = (from i in GamePlayers
@@ -110,6 +117,8 @@ namespace mathbattle
             {
                 player.Player.ChangeRating(-1);
             }
+
+            await SendScore(true);
 
             Program.Server.Games.Remove(this);
         }
@@ -135,13 +144,15 @@ namespace mathbattle
 
         async Task ChangeQuestion()
         {
+            AcceptMessages = false;
+            StopQuestionTimer();
+
             foreach (var gameplayer in GamePlayers)
             {
                 await Program.Server.Client.SendChatActionAsync(gameplayer.Player.ChatId, ChatAction.Typing);
                 gameplayer.Answered = false;
             }
 
-            await Task.Delay(500);
 
             if (QuestionNum == 0)
             {
@@ -159,10 +170,13 @@ namespace mathbattle
 
             Question = QuestionSelector.SelectQuestion();
             QuestionNum++;
+
+            await Task.Delay(500);
             SendToAll.SendText(GamePlayers, Question.QuestionText);
 
+            AcceptMessages = true;
 
-            DelayedTask.DelayTask(new List<DelayedTask>() {
+            TillNewQuestionDelayer = DelayedTask.DelayTask(new List<DelayedTask>() {
                 new DelayedTask(() => ChangeQuestion(), 60),
                 new DelayedTask(() => SendToAll.SendText(GamePlayers,"30 seconds remaining"), 30),
                 new DelayedTask(() => SendToAll.SendText(GamePlayers,"15 seconds remaining"), 45),
@@ -170,7 +184,7 @@ namespace mathbattle
             });
         }
 
-        async Task SendScore()
+        async Task SendScore(bool last = false)
         {
             await Task.Delay(500);
 
@@ -178,10 +192,19 @@ namespace mathbattle
 
             foreach (var gamePlayer in GamePlayers)
             {
-                scoretext += string.Format("{0} - {1} ({2}).\n",
+                if (last)
+                {
+                    scoretext += string.Format("{0} - {1} ({2}).\n",
+                    gamePlayer.Player.Name,
+                    gamePlayer.Score,
+                    gamePlayer.Player.Rating);
+                }
+                else
+                {
+                    scoretext += string.Format("{0} - {1}.\n",
                 gamePlayer.Player.Name,
-                gamePlayer.Score,
-                gamePlayer.Player.Rating);
+                gamePlayer.Score);
+                }
             }
 
             SendToAll.SendText(GamePlayers, scoretext);
@@ -215,7 +238,19 @@ namespace mathbattle
 
             return null;
         }
+
+        void StopQuestionTimer()
+        {
+            if (TillNewQuestionDelayer != null)
+            {
+                TillNewQuestionDelayer.Stop();
+                TillNewQuestionDelayer = null;
+            }
+        }
     }
+
+
+
 
     public class GamePlayer : PlayerWrapper
     {

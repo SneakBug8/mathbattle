@@ -1,34 +1,45 @@
-﻿using System;
-using System.Threading.Tasks;
-using Telegram.Bot;
+﻿using System.Threading.Tasks;
 using mathbattle.config;
 using LiteDB;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace mathbattle
 {
     class Program
     {
-        
+
         public static GameFinder GameFinder;
         public static Server Server;
         public static LiteDatabase Database;
         static void Main(string[] args)
         {
-            Database = new LiteDatabase(@"\MyData.db");
+            var dbpath = GetApplicationRoot() + @"\MyData.db";
+            Database = new LiteDatabase(dbpath);
             Server = new Server(GlobalConfig.Token);
             GameFinder = new GameFinder();
 
             Loop();
 
-            while (true) {}
+            while (true) { }
         }
 
-        static async void Loop() {
+        static async void Loop()
+        {
             while (true)
             {
                 await Task.Delay(GlobalConfig.LoopDelay);
                 GameFinder.CheckPlayers();
             }
+        }
+
+        public static string GetApplicationRoot()
+        {
+            var exePath = Path.GetDirectoryName(System.Reflection
+                              .Assembly.GetExecutingAssembly().CodeBase);
+            Regex appPathMatcher = new Regex(@"(?<!fil)[A-Za-z]:\\+[\S\s]*?(?=\\+bin)");
+            var appRoot = appPathMatcher.Match(exePath).Value;
+            return appRoot;
         }
     }
 }

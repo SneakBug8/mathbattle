@@ -18,13 +18,16 @@ namespace mathbattle
         {
             if (SearchingPlayers.Count >= SearcherConfig.MinimumPlayersForGameCreation)
             {
+                var searchingPlayersCopy = SearchingPlayers;
                 DelayedTask.DelayTask(new List<DelayedTask>() {
-                new DelayedTask(() => StartGame(), 60),
-                new DelayedTask(() => SendToAll.SendText(SearchingPlayers.ToArray(), "Game will start in 60 seconds."), 1),                
-                new DelayedTask(() => SendToAll.SendText(SearchingPlayers.ToArray(), "Game will start in 30 seconds."), 30),
-                new DelayedTask(() => SendToAll.SendText(SearchingPlayers.ToArray(), "Game will start in 15 seconds."), 45),
-                new DelayedTask(() => SendToAll.SendText(SearchingPlayers.ToArray(), "Game will start in 5 seconds."), 55)
+                new DelayedTask(() => StartGame(searchingPlayersCopy), 60),
+                new DelayedTask(() => SendToAll.SendText(searchingPlayersCopy.ToArray(), "Game will start in 60 seconds."), 1),                
+                new DelayedTask(() => SendToAll.SendText(searchingPlayersCopy.ToArray(), "Game will start in 30 seconds."), 30),
+                new DelayedTask(() => SendToAll.SendText(searchingPlayersCopy.ToArray(), "Game will start in 15 seconds."), 45),
+                new DelayedTask(() => SendToAll.SendText(searchingPlayersCopy.ToArray(), "Game will start in 5 seconds."), 55)
                 });
+
+                SearchingPlayers = new List<SearchingPlayer>();
             }
 
             CheckOldPlayers();
@@ -49,18 +52,10 @@ namespace mathbattle
             }
         }
 
-        void StartGame()
+        void StartGame(List<SearchingPlayer> players)
         {
-            if (SearchingPlayers.Count < 2)
-            {
-                return;
-            }
-
             // Create new game and assign there all players
-            var game = new Game(GetPlayersList(SearchingPlayers));
-
-            // Empty Searching Players
-            SearchingPlayers = new List<SearchingPlayer>();
+            var game = new Game(GetPlayersList(players));
 
             foreach (var gameplayer in game.GamePlayers)
             {
