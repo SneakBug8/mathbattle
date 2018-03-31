@@ -24,20 +24,22 @@ namespace mathbattle.utility
     public class TaskDelayer {
         List<DelayedTask> Actions;
         bool Stopped;
+        public int CurrentTimer {get { return _currentTimer;}}
+        int _currentTimer;
         public TaskDelayer(List<DelayedTask> actions) {
             Actions = actions;
-
             Loop();
         }
 
         async void Loop() {
+            _currentTimer += 1;
             while (Actions.Count > 0 && !Stopped)
             {
                 for (int i = 0; i < Actions.Count; i++)
                 {
                     Actions[i].Delay--;
 
-                    if (Actions[i].Delay == 0)
+                    if (Actions[i].Delay <= 0)
                     {
                         Actions[i].Action();
                         Actions[i] = null;

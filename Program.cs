@@ -3,13 +3,14 @@ using mathbattle.config;
 using LiteDB;
 using System.IO;
 using System.Text.RegularExpressions;
+using mathbattle.GameSearcher;
 
 namespace mathbattle
 {
     class Program
     {
 
-        public static GameFinder GameFinder;
+        public static GameSearcher GameFinder;
         public static Server Server;
         public static LiteDatabase Database;
         static void Main(string[] args)
@@ -17,7 +18,7 @@ namespace mathbattle
             var dbpath = GetApplicationRoot() + @"\MyData.db";
             Database = new LiteDatabase(dbpath);
             Server = new Server(GlobalConfig.Token);
-            GameFinder = new GameFinder();
+            GameFinder = new GameSearcher();
 
             Loop();
 
