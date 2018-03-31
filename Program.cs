@@ -3,7 +3,7 @@ using mathbattle.config;
 using LiteDB;
 using System.IO;
 using System.Text.RegularExpressions;
-using mathbattle.GameSearcher;
+using mathbattle.SearchingSystem;
 
 namespace mathbattle
 {

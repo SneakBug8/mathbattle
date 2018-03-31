@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using mathbattle.utility;
 using mathbattle.config;
 
-namespace mathbattle.GameSearcher
+namespace mathbattle.SearchingSystem
 {
     public class GameSearcher
     {

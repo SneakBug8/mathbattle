@@ -1,7 +1,7 @@
 using mathbattle;
 using mathbattle.utility;
 
-namespace mathbattle.GameSearcher {
+namespace mathbattle.SearchingSystem {
 public class SearchingPlayer : PlayerWrapper
     {
         public int TimeTillRemoveFromSearching;

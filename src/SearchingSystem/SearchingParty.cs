@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using mathbattle.utility;
 
-namespace mathbattle.GameSearcher
+namespace mathbattle.SearchingSystem
 {
     public class SearchingParty
     {

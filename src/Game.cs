@@ -14,7 +14,7 @@ namespace mathbattle
     {
         public Question Question;
         public GamePlayer[] GamePlayers;
-        public int QuestionNum;
+        public int QuestionNum = 1;
         TaskDelayer TillNewQuestionDelayer;
         public bool AcceptMessages = true;
         public Game(Player[] players)
@@ -160,9 +160,12 @@ namespace mathbattle
                 SendToAll.SendText(GamePlayers, "First question:");
 
             }
-            else if (QuestionNum == 10)
+            else if (QuestionNum == GameConfig.QuestionsPerGame)
             {
                 SendToAll.SendText(GamePlayers, "Last question:");
+            }
+            else if (QuestionNum > GameConfig.QuestionsPerGame) {
+                SendToAll.SendText(GamePlayers, "Playing untill getting winner:");                
             }
             else
             {
@@ -172,8 +175,14 @@ namespace mathbattle
             Question = QuestionSelector.SelectQuestion();
             QuestionNum++;
 
-            await Task.Delay(500);
-            SendToAll.SendText(GamePlayers, Question.QuestionText);
+            await Task.Delay(250);
+            var outtext = Question.QuestionText;
+            int i = 0;
+            foreach(var answer in Question.Answers) {
+                i++;
+                outtext += "\n" + i + ") " + answer;
+            }
+            SendToAll.SendText(GamePlayers, outtext);
 
             AcceptMessages = true;
 
