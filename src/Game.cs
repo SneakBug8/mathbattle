@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -79,19 +80,38 @@ namespace mathbattle
                 }
                 else
                 {
-                    // End the game
-                    SendToAll.SendText(GamePlayers, "Game has ended. Final Score:");
-
-                    await SendScore();
-
-                    foreach (var player in GamePlayers)
-                    {
-                        player.Player.Game = null;
-                    }
-
-                    Program.Server.Games.Remove(this);
+                    EndGame();
                 }
             }
+        }
+
+        async void EndGame()
+        {
+            SendToAll.SendText(GamePlayers, "Game has ended. Final Score:");
+
+            await SendScore();
+
+            var playersByScore = (from i in GamePlayers
+                                  where i.Score > 0
+                                  orderby i.Score
+                                  select i).ToArray();
+
+
+            for (int i = playersByScore.Length - 1; i < playersByScore.Length; i--)
+            {
+                playersByScore[i].Player.ChangeRating(i);
+            }
+
+            var playersApplyNegScore = (from i in GamePlayers
+                                        where i.Score == 0
+                                        select i).ToList();
+
+            foreach (var player in playersApplyNegScore)
+            {
+                player.Player.ChangeRating(-1);
+            }
+
+            Program.Server.Games.Remove(this);
         }
 
         bool HaveWinner()
@@ -158,7 +178,10 @@ namespace mathbattle
 
             foreach (var gamePlayer in GamePlayers)
             {
-                scoretext += gamePlayer.Player.Name + " - " + gamePlayer.Score + ". \n";
+                scoretext += string.Format("{0} - {1} ({2}).\n",
+                gamePlayer.Player.Name,
+                gamePlayer.Score,
+                gamePlayer.Player.Rating);
             }
 
             SendToAll.SendText(GamePlayers, scoretext);

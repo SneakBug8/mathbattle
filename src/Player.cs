@@ -10,10 +10,12 @@ namespace mathbattle
         public string Name {get; set;}
         public Game Game;
         public ChatId ChatId;
+        public int Rating {get; set;}
         public Player() {}
         public Player(int id, string name) {
             Id = id;
             Name = name;
+            Rating = 0;
         }
 
         public async Task SendMessage(string text, int delay = 250) {
@@ -24,6 +26,11 @@ namespace mathbattle
 
         public void SendAction(ChatAction action) {
             Program.Server.Client.SendChatActionAsync(ChatId, action);
+        }
+
+        public void ChangeRating(int change) {
+            Rating += change;
+            Program.Database.GetCollection<Player>("Players").Update(this);
         }
     }
 }
